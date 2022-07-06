@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const userSchema = new mongoose.Schema({
 
-    title: { type:String, required:true, enum:["Mr","Mrs","Miss"],
+    title: { type:String, required:true, enum:["Mr","Mrs","Miss"]},
 
     name: { type:String, required:true},
 
@@ -9,12 +9,16 @@ const userSchema = new mongoose.Schema({
 
     email: { type:String, required:true, unique:true, },
 
-    password:
+    password: {}
        
 
 
     
-})
+}, { timestamps: true });
+
+module.exports = mongoose.model('users', userSchema)
+
+
 
  
 // title: {string, mandatory, enum[Mr, Mrs, Miss]},
