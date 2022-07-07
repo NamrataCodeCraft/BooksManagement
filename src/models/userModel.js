@@ -9,7 +9,13 @@ const userSchema = new mongoose.Schema({
 
     email: { type:String, required:true, unique:true, },
 
+<<<<<<< HEAD
     password: { type:String, required:true, minLength:8, maxLength:15 }, //  password: {string, mandatory, minLen 8, maxLen 15},
+=======
+    password: {}
+       
+
+>>>>>>> 479051c457af013069c7d379c7960455e3f6f143
 
     address: [{
         street: String,
@@ -17,6 +23,14 @@ const userSchema = new mongoose.Schema({
         pincode: String,
     }],
     
+<<<<<<< HEAD
 },{timestamps:true})
+=======
+}, { timestamps: true });
+
+module.exports = mongoose.model('users', userSchema)
+
+
+>>>>>>> 479051c457af013069c7d379c7960455e3f6f143
 
 module.exports = mongoose.model("user",userSchema)
