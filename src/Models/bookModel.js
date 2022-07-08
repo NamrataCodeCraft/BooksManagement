@@ -1,4 +1,5 @@
 const mongoose = require("mongoose")
+const moment = require("moment")
 const ObjectId = mongoose.Schema.Types.ObjectId
 
 const bookSchema = new mongoose.Schema({
@@ -38,20 +39,16 @@ const bookSchema = new mongoose.Schema({
     reviews:{
         type:Number,
         default:0,
+        // Comment:, 
         trim:true
-    },
-    deletedAt:{
-        type:Date
     },
     isDeleted:{
         type:Boolean,
         default:false
     },
-    releasedAt:{
-        type:Date,
-        required:true,
-        trim:true
-    }
+    releasedAt: {
+        type: Date,
+        default: moment(new Date()).format("YYYY-MM-DD")}
 }, {timestamps:true})
 
 module.exports = mongoose.model('Book',bookSchema)//books
