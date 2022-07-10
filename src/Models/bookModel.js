@@ -46,6 +46,10 @@ const bookSchema = new mongoose.Schema({
         type:Boolean,
         default:false
     },
+    deletedAt: {
+        type:Date,
+        default:null
+    },
     releasedAt: {
         type: Date,
         default: moment(new Date()).format("YYYY-MM-DD")}

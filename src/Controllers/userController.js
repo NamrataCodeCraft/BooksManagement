@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken")
 
 //============================================================= validation ==================================================================//
 const isValid = function (value) {
-    if (typeof value === 'undefined' || value === null) return false
+    if (typeof value === undefined || value === null) return false
     if (typeof value === 'string' && value.trim().length === 0) return false
     return true;
 }
@@ -114,7 +114,7 @@ const loginUser = async function (req, res) {
             iat: Math.floor(Date.now() / 1000),
             exp: Math.floor(Date.now() / 1000) * 24 * 60 * 60,
         }, "Project_3_BooksManagement")
-
+        res.setHeader("x-api-key", token);
         res.status(200).send({ status: true, message: "Success", data: token });
 
     } catch (err) {
