@@ -11,7 +11,7 @@ const isValid = function (value) {
 }
 
 const isValidTitle = function (title) {
-    return ["Mr", "Mrs", "Miss"].indexOf(title) != -1
+    return ["Mr", "Mrs", "Miss"].indexOf(title.trim()) != -1
 
 }
 
@@ -66,13 +66,13 @@ const createUser = async function (req, res) {
             return res.status(400).send({ status: false, message: "password is mandatory" })
         }
         if (!password.match(/^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z])([a-zA-Z0-9!@#$%^&*]{8,15})$/)) {
-            return res.status(400).send({ status: false, message: "password is not strong,must contain atleast 1 uppercase 1 lowercase ,1 specialcharacter,and number and must be 8 characters" })
+            return res.status(400).send({ status: false, message: "password is not strong,must contain atleast 1 uppercase 1 lowercase ,1 specialcharacter,and number and must be 8 or 15 characters" })
         }
         if (!isValid(address)) {
             return res.status(400).send({ status: false, message: "address is mandatory" })
         }
         if (!isValid(address.street)) {
-            return res.status(400).send({ status: false, message: "address is mandatory" })
+            return res.status(400).send({ status: false, message: "In the address street is mandatory" })
         }
         if (!isValid(address.city)) {
             return res.status(400).send({ status: false, message: "In the address city is mandatory" })
