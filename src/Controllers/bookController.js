@@ -4,12 +4,13 @@ const reviewModel = require("../models/reviewModel")
 const vaidator = require("validator")
 const moment = require("moment")
 const mongoose = require("mongoose")
+const jwt = require("jsonwebtoken")
 const ObjectId = mongoose.Types.ObjectId
 
 //============================================================= validation ==================================================================//
 
 const isValid = function (value) {
-    if (typeof value === undefined || value === null) return false
+    if (typeof value === 'undefined' || value === null) return false
     if (typeof value === 'string' && value.trim().length === 0) return false
     return true;
 }
@@ -43,14 +44,14 @@ let createbook = async function (req, res) {
         if (!ObjectId.isValid(userId)) {
             return res.status(400).send({ status: false, message: "userId should be present and must be 24 characters" })
         }
+        let userIdcheck = await userModel.findById(userId)
+        if (!userIdcheck) {
+            return res.status(404).send({ status: false, message: "userId not found" })
+        }
         let token = req.headers["x-api-key"];
         let decodedToken = jwt.verify(token, "Project_3_BooksManagement")
         if (decodedToken.userId != userId) {
             return res.status(403).send({ status: false, message: 'User logged is not allowed to create data please check userId' })
-        }
-        let userIdcheck = await userModel.findById(userId)
-        if (!userIdcheck) {
-            return res.status(404).send({ status: false, message: "userId not found" })
         }
         if (!isValid(ISBN)) {
             return res.status(400).send({ status: false, message: "please provide ISBN" })
@@ -87,7 +88,7 @@ let createbook = async function (req, res) {
 
 let getbooks = async function (req, res) {
     try {
-        let query = Object.keys(req.query);  
+        let query = Object.keys(req.query);
         if (query.length) {
             let filter = req.query;
             filter.isDeleted = false;
@@ -98,12 +99,12 @@ let getbooks = async function (req, res) {
             if (!allbooks.length) {
                 return res.status(404).send({ status: false, message: "No books found with requested query" })
             }
-            return res.status(200).send({ status: true, message: "Success", data: allbooks })
+            return res.status(200).send({ status: true, message: "Book list", data: allbooks })
         }
         let getbooks = await bookModel.find({ isDeleted: false }).select({ _id: 1, title: 1, excerpt: 1, userId: 1, category: 1, reviews: 1, releasedAt: 1 }).sort({ title: 1 })
         if (!getbooks.length)
             return res.status(404).send({ status: false, message: "Book does not exist" })
-        res.status(200).send({ status: true, message: "Success", data: getbooks })
+        res.status(200).send({ status: true, message: "Book list", data: getbooks })
     }
     catch (error) {
         res.status(500).send({ msg: "Error", error: error.message })
@@ -118,26 +119,15 @@ let getbooksbyId = async function (req, res) {
         if (!ObjectId.isValid(bookid)) {
             return res.status(400).send({ status: false, message: "bookId must be present and must be of 24 characters" })
         }
-        let getDetails = await bookModel.findOne({ _id: bookid, isDeleted: false })
+        let getDetails = await bookModel.findOne({ _id: bookid, isDeleted: false }).select({__v:0})
         if (!getDetails) return res.status(404).send({ status: false, message: "No such book found" })
 
-        let reviewDetails = await reviewModel.find({ bookId: getDetails._id }).select({ createdAt: 0, updatedAt: 0 })
+        let reviewDetails = await reviewModel.find({ bookId: getDetails._id, isDeleted: false }).select({isDeleted:0,__v:0})
 
-        let booksData = {
-            _id: getDetails._id,
-            title: getDetails.title,
-            excerpt: getDetails.excerpt,
-            userId: getDetails.userId,
-            category: getDetails.category,
-            subcategory: getDetails.subcategory,
-            isDeleted: getDetails.isDeleted,
-            reviews: getDetails.reviews,
-            releasedAt: getDetails.releasedAt,
-            createdAt: getDetails.createdAt,
-            updatedAt: getDetails.updatedAt,
-            reviewsData: reviewDetails
-        }
-        res.status(200).send({ status: true, message: "Success", data: booksData })
+        let {...booksData} = getDetails
+        booksData._doc.reviewsData = reviewDetails
+    
+        res.status(200).send({ status: true, message: "Book list", data: booksData._doc })
     }
     catch (error) {
         res.status(500).send({ msg: "Error", error: error.message })
@@ -180,7 +170,7 @@ const updateBooks = async function (req, res) {
         }
         let ISBNvalidate = /^[0-9]{10,13}$/.test(ISBN.trim())
         if (!ISBNvalidate) {
-            return res.status(400).send({ status: false, message: "please provide 10 digits ISBN" })
+            return res.status(400).send({ status: false, message: "please provide 10 or 13 digits ISBN" })
         }
         if (ISBN) {
             let uniqueISBN = await bookModel.findOne({ ISBN: ISBN, isDeleted: false })
@@ -215,7 +205,7 @@ const deleteBookById = async function (req, res) {
         if (decodedToken.userId != book.userId) {
             return res.status(403).send({ status: false, message: 'User logged is not allowed to delete book' })
         }
-        let deleted = await bookModel.findOneAndUpdate({ _id: bookId, isDeleted: false }, { $set: { isDeleted: true, deletedAt: Date.now() }},{ new: true })
+        let deleted = await bookModel.findOneAndUpdate({ _id: bookId, isDeleted: false }, { $set: { isDeleted: true, deletedAt: Date.now() } }, { new: true })
         if (deleted) {
             return res.status(200).send({ status: true, message: "Success" })
         }
@@ -223,7 +213,7 @@ const deleteBookById = async function (req, res) {
         res.status(500).send({ status: false, message: err.message })
     }
 }
-
+//=============================================================== module exported ==========================================================//
 module.exports = {
     createbook,
     getbooks,

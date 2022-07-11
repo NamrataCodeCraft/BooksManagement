@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken")
 
 //============================================================= validation ==================================================================//
 const isValid = function (value) {
-    if (typeof value === undefined || value === null) return false
+    if (typeof value === 'undefined' || value === null) return false
     if (typeof value === 'string' && value.trim().length === 0) return false
     return true;
 }
@@ -39,7 +39,6 @@ const createUser = async function (req, res) {
         if (!isValid(name)) {
             return res.status(400).send({ status: false, message: "Name is mandatory" })
         }
-
         if (!(/^[A-Za-z]+$/).test(name.trim())) {
             return res.status(400).send({ status: false, message: "Name should only contain alphabet" })
         }
