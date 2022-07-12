@@ -38,12 +38,12 @@ const createreveiw = async function (req, res) {
             return res.status(400).send({ status: false, message: "please provide review data" })
         }
         data.bookId = bookid
-        if (!isValid(reviewedBy)) {
-            return res.status(400).send({ status: false, message: "reviewedBy field is required" })
-        }
-        if (!(/^[A-Za-z]+$/).test(reviewedBy.trim())) {
-            return res.status(400).send({ status: false, message: "reviewedBy should only contain alphabet" })
-        }
+        // if (!isValid(reviewedBy)) {
+        //     return res.status(400).send({ status: false, message: "reviewedBy field is required" })
+        // }
+        // if (!(/^[A-Za-z]+$/).test(reviewedBy.trim())) {
+        //     return res.status(400).send({ status: false, message: "reviewedBy should only contain alphabet" })
+        // }
         if (!isValid(rating)) {
             return res.status(400).send({ status: false, message: "rating field is required" })
         }
@@ -52,7 +52,7 @@ const createreveiw = async function (req, res) {
             return res.status(400).send({ status: false, message: "please provide rating in single digit from 0 to 5 only " })
         }
         const reviewCreation = await reviewModel.create(data)
-        let reviewDetails = await reviewModel.find(reviewCreation._id).select({isDeleted:0,__v:0})
+        let reviewDetails = await reviewModel.find({_id:reviewCreation._id}).select({isDeleted:0,__v:0})
         
         let getDetails = await bookModel.findOneAndUpdate({ _id: bookid }, { $inc: { reviews: 1 } }, { new: true }).select({__v: 0})
         let {...bookData} = getDetails

@@ -20,6 +20,9 @@ const isValidDate = function (value) {
     return true;
 }
 
+const isValidObjectId = function (objectId) {
+    return mongoose.Types.ObjectId.isValid(objectId)
+}
 
 //======================================================= create book ======================================================================//
 
@@ -41,8 +44,11 @@ let createbook = async function (req, res) {
         if (!isValid(excerpt)) {
             return res.status(400).send({ status: false, message: "excerpt field is required" })
         }
-        if (!ObjectId.isValid(userId)) {
-            return res.status(400).send({ status: false, message: "userId should be present and must be 24 characters" })
+        if (!isValid(userId)) {
+            return res.status(400).send({ status: false, message: "userId should be present" })
+        }
+        if (!isValidObjectId(userId)) {
+            return res.status(400).send({ status: false, message: `${userId} is not a valid userId` })
         }
         let userIdcheck = await userModel.findById(userId)
         if (!userIdcheck) {
@@ -56,9 +62,9 @@ let createbook = async function (req, res) {
         if (!isValid(ISBN)) {
             return res.status(400).send({ status: false, message: "please provide ISBN" })
         }
-        let ISBNvalidate = /^[0-9]{10,13}$/.test(ISBN.trim())
+        let ISBNvalidate = /^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/.test(ISBN.trim())
         if (!(ISBNvalidate)) {
-            return res.status(400).send({ status: false, message: "please provide 10 digits ISBN" })
+            return res.status(400).send({ status: false, message: "please provide 10 or 13 digits ISBN" })
         }
         let uniqueISBN = await bookModel.findOne({ ISBN: ISBN })
         if (uniqueISBN) {
@@ -67,7 +73,6 @@ let createbook = async function (req, res) {
         if (!isValid(category)) {
             return res.status(400).send({ status: false, message: "please provide category" })
         }
-
         if (!isValid(subcategory)) {
             return res.status(400).send({ status: false, message: "please provide subcategory" })
         }
@@ -92,8 +97,8 @@ let getbooks = async function (req, res) {
         if (query.length) {
             let filter = req.query;
             filter.isDeleted = false;
-            if (!ObjectId(filter.userId)) {                                                // isValid function is not used due to contradiction 
-                return res.status(400).send({ status: false, message: "userId must be 24 characters" }) //checkit once
+            if (!isValidObjectId(filter.userId)) {                                                // isValid function is not used due to contradiction 
+                return res.status(400).send({ status: false, message: `${filter.userId} must be 24 characters` }) //checkit once
             }
             let allbooks = await bookModel.find(filter).select({ _id: 1, title: 1, excerpt: 1, userId: 1, category: 1, subcategory: 1, reviews: 1, releasedAt: 1 }).sort({ title: 1 })
             if (!allbooks.length) {
@@ -168,7 +173,7 @@ const updateBooks = async function (req, res) {
         if (!isValidDate(releasedAt)) {
             return res.status(400).send({ status: false, message: "Invalid date format, Please provide date as 'YYYY-MM-DD' " })
         }
-        let ISBNvalidate = /^[0-9]{10,13}$/.test(ISBN.trim())
+        let ISBNvalidate = /^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/.test(ISBN.trim())
         if (!ISBNvalidate) {
             return res.status(400).send({ status: false, message: "please provide 10 or 13 digits ISBN" })
         }
